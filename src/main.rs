@@ -9,7 +9,6 @@ use std::io::{Read, Write};
 use std::path::Path;
 use std::{fs, io};
 use zip::unstable::write::FileOptionsExt;
-use zip::write::FileOptions;
 use zip::{CompressionMethod, ZipWriter};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -30,9 +29,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let zip_file = File::create(&zip_file_name)?;
     let mut zip = ZipWriter::new(zip_file);
 
-    let options: FileOptions<()> = *ZipFileOptions::new()
+    let options: ZipFileOptions<()> = ZipFileOptions::new()
         .with_deprecated_encryption(password.as_bytes())
-        .compression_method(CompressionMethod::Bzip2)
+        .compression_method(CompressionMethod::DEFLATE)
         .unix_permissions(0o755);
 
     let paths = fs::read_dir(path).unwrap();
@@ -41,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let file = File::open(&file_path)?;
         let file_name = file_path.file_name().unwrap().to_str().unwrap();
 
-        zip.start_file(file_name, options)?;
+        zip.start_file(file_name, *options)?;
         let mut buffer = Vec::new();
         io::copy(&mut file.take(u64::MAX), &mut buffer)?;
         zip.write_all(&buffer)?;
