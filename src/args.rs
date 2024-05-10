@@ -8,4 +8,7 @@ pub struct Args {
     /// Password
     #[arg(long)]
     pub password: String,
+    #[arg(long)]
+    /// Password
+    pub size: String,
 }
